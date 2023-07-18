@@ -19,8 +19,13 @@ def hello_world():
 @app.route('/Home-Page/<string:message_jwt>')
 def HomePage(message_jwt):
     decoded_jwt = jwt.decode(message_jwt, "secret", algorithms=["HS256"])
+    content = {
+        'Username': email.split('@')[0],
+        'email': email,
+        'password': password
+    }
     
-    return render_template('HomePage.html', email=decoded_jwt['email'], password=decoded_jwt['password'], user=decoded_jwt['Username'].split('@'))
+    return render_template('HomePage.html', email=decoded_jwt, password=password, user=content['Username'], content=content)
 
 @app.route('/Login1')
 def Login1():
