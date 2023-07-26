@@ -37,7 +37,7 @@ def hello_world():
 
 @app.route('/Home-Page/')
 def Email():
-    return redirect('/')
+    hello_world()
 
 
 @app.route('/Home-Page/<string:message_jwt>')

@@ -35,10 +35,6 @@ def hello_world():
         return redirect(f'/Home-Page/{encoded_jwt}')
     return render_template('email.html')
 
-@app.route('/Home-Page/')
-def Email():
-    return redirect('/')
-
 
 @app.route('/Home-Page/<string:message_jwt>')
 def HomePage(message_jwt):
@@ -52,15 +48,15 @@ def Login1():
     return render_template('/Login1.html')
 
 @app.route('/video')
-def video():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
-    #return render_template('/video.html')
 def gen(camera):
     while True:
         #get camera frame
         frame = camera.get_frame()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+def video():
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return render_template('/video.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)

@@ -35,10 +35,6 @@ def hello_world():
         return redirect(f'/Home-Page/{encoded_jwt}')
     return render_template('email.html')
 
-@app.route('/Home-Page/')
-def Email():
-    return redirect('/')
-
 
 @app.route('/Home-Page/<string:message_jwt>')
 def HomePage(message_jwt):
