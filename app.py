@@ -1,19 +1,58 @@
 from flask import Flask, render_template, request, redirect, Response
 import jwt
+from transformers import DetrForObjectDetection, DetrImageProcessor 
+from PIL import Image
+import torch
+import time
+import datetime
+import numpy as np
 from camera import VideoCamera
 import cv2
 
 app = Flask(__name__)
 camera=cv2.VideoCapture(0)
 
+
+def load_model(saved_model_name):
+    processor = DetrImageProcessor.from_pretrained(saved_model_name)
+    model = DetrForObjectDetection.from_pretrained(saved_model_name)
+    return model, processor
+
+def predict(frame, min_acc = 0.8):
+      image = Image.fromarray(np.uint8(frame)).convert('RGB')
+      inputs = processor(images=image, return_tensors="pt")
+      outputs = model(**inputs)
+      target_sizes = torch.tensor([image.size[::-1]])
+      results = processor.post_process_object_detection(outputs, target_sizes=target_sizes, threshold=min_acc)[0]
+    
+      for score, label, box in zip(results["scores"], results["labels"], results["boxes"]):
+          box = [round(i, 2) for i in box.tolist()]
+          print(
+                  f"Detected {model.config.id2label[label.item()]} with confidence "
+                  f"{round(score.item(), 3)} at location {box}"
+          )
+
+# Model name/path
+saved_model_name = ''
+
+# Load model only once
+model, processor = load_model(saved_model_name)
+
 ### Defining Functions
 def generate_frames():
+    now = datetime.timedelta(datetime.datetime.now().minute)
     while True:
+        next1 = datetime.timedelta(datetime.datetime.now().minute)
         ## Read the camera frame
         success, frame = camera.read()
         if not success:
             break
         else:
+            # Check frames every 2 minutes
+            if next1.days-now.days == 2:
+                now = next1
+                next1 = datetime.timedelta(datetime.datetime.now().minute)
+                predict(frame, min_acc = 0.8)
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
         
