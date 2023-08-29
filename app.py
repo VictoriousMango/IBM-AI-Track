@@ -8,6 +8,7 @@ import datetime
 import numpy as np
 from camera import VideoCamera
 import cv2
+import os
 
 app = Flask(__name__)
 camera=cv2.VideoCapture(0)
@@ -18,25 +19,36 @@ def load_model(saved_model_name):
     model = DetrForObjectDetection.from_pretrained(saved_model_name)
     return model, processor
 
-def predict(frame, min_acc = 0.8):
+# Model name/path
+saved_model_name = 'facebook/detr-resnet-50'    # Replace with trained model name/path 
+
+# Load model only once
+model, processor = load_model(saved_model_name)
+
+def predict(frame, min_acc):
       image = Image.fromarray(np.uint8(frame)).convert('RGB')
       inputs = processor(images=image, return_tensors="pt")
       outputs = model(**inputs)
       target_sizes = torch.tensor([image.size[::-1]])
       results = processor.post_process_object_detection(outputs, target_sizes=target_sizes, threshold=min_acc)[0]
-    
+      print('==========')
       for score, label, box in zip(results["scores"], results["labels"], results["boxes"]):
-          box = [round(i, 2) for i in box.tolist()]
-          print(
-                  f"Detected {model.config.id2label[label.item()]} with confidence "
-                  f"{round(score.item(), 3)} at location {box}"
-          )
+          box = [int(i) for i in box.tolist()]
+          msg = f"Detected {model.config.id2label[label.item()]} with confidence {round(score.item(), 3)} at {datetime.datetime.now()}"
+          print(msg)
+          if os.path.exists('logs.txt') is False:
+              with open('logs.txt', 'w') as f:
+                  f.write(msg)
+          else:
+              with open('logs.txt', 'a') as f:
+                  f.write('\n' + msg)
 
-# Model name/path
-saved_model_name = ''
+          frame = cv2.rectangle(frame, box[:2], box[-2:], [255,255,255], 4)
+          frame = cv2.putText(frame, model.config.id2label[label.item()], box[-2:], cv2.FONT_HERSHEY_SIMPLEX,
+                   1, (255, 0, 0), 1, cv2.LINE_AA)
+      return frame
 
-# Load model only once
-model, processor = load_model(saved_model_name)
+
 
 ### Defining Functions
 def generate_frames():
@@ -48,11 +60,13 @@ def generate_frames():
         if not success:
             break
         else:
-            # Check frames every 2 minutes
-            if next1.days-now.days == 2:
+            # Check frames every 5 minutes
+            if next1.days-now.days == 5:
                 now = next1
                 next1 = datetime.timedelta(datetime.datetime.now().minute)
-                predict(frame, min_acc = 0.8)
+                # print(next1.days-now.days)
+                frame = predict(frame, min_acc=0.8)
+                # cv2.imwrite('1.jpg', frame)             # save image
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
         
