@@ -17,8 +17,9 @@ def generate_frames():
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
         
-        yield(b'--frame\r\n'
-                        b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+        #yield(b'--frame\r\n'
+        #                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+        yield(frame)
 
 
 ### Defining Routes
@@ -55,7 +56,6 @@ def Login1():
 def video():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
     #return render_template('/video.html')
-'''
 def gen(camera):
     while True:
         #get camera frame
@@ -63,7 +63,6 @@ def gen(camera):
         #yield (b'--frame\r\n'
         #       b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
         yield(frame)
-'''
-        
+
 if __name__ == '__main__':
     app.run(debug=True, port=8000)
