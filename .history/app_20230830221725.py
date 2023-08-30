@@ -20,17 +20,8 @@ camera=cv2.VideoCapture(0)
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "memcache"
 app.config['SECRET_KEY'] = 'some random string'
-### Configuration for Mails
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'Asp82045@gmail.com'
-app.config['MAIL_PASSWORD'] = 'isvyguwkoprmqywf'
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
 
 
-
-mail = Mail(app)
 client = Client(keys.account_sid, keys.auth_token)
 
 
@@ -142,9 +133,9 @@ def gen(camera):
         yield(frame)
 '''
         
-### API to send SMSs
-@app.route('/SMS/<body>')
-def smsSender(body):
+
+@app.route('/message/<body>')
+def messageSender(body):
     targetNumber = session['phoneNumber']
     message = client.messages.create(
     body=body,
@@ -152,14 +143,7 @@ def smsSender(body):
     to = targetNumber
     )
     print(message)
-    return redirect('/')
-
-### API to send E-Mails
-@app.route('/email/<body>')
-def emailSender(body):
-    msg = Message("Hazard Report", sender="noreply@demo.com", recipients=[session['email']])
-    msg.body = body
-    mail.send(msg)
+    print("Hello")
     return redirect('/')
 
 if __name__ == '__main__':

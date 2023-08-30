@@ -9,28 +9,16 @@ import numpy as np
 from camera import VideoCamera
 import cv2
 import os
-### SMS sending API 
 from twilio.rest import Client
 import keys
-### EMAIL Sending Library
-from flask_mail import Mail, Message
 
 app = Flask(__name__)
 camera=cv2.VideoCapture(0)
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "memcache"
 app.config['SECRET_KEY'] = 'some random string'
-### Configuration for Mails
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'Asp82045@gmail.com'
-app.config['MAIL_PASSWORD'] = 'isvyguwkoprmqywf'
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
 
 
-
-mail = Mail(app)
 client = Client(keys.account_sid, keys.auth_token)
 
 
@@ -110,11 +98,7 @@ def hello_world():
 
 @app.route('/Home-Page/')
 def Email():
-    try:
-        encoded_jwt = jwt.encode({'email': session["email"], 'Phone Number' : session["phoneNumber"], 'password': session["password"]}, "secret", algorithm="HS256")
-        return redirect(f'/Home-Page/{encoded_jwt}')
-    except:
-        return redirect('/')
+    return redirect('/')
 
 
 @app.route('/Home-Page/<string:message_jwt>')
@@ -142,9 +126,9 @@ def gen(camera):
         yield(frame)
 '''
         
-### API to send SMSs
-@app.route('/SMS/<body>')
-def smsSender(body):
+
+@app.route('/message/<body>')
+def messageSender(body):
     targetNumber = session['phoneNumber']
     message = client.messages.create(
     body=body,
@@ -152,14 +136,7 @@ def smsSender(body):
     to = targetNumber
     )
     print(message)
-    return redirect('/')
-
-### API to send E-Mails
-@app.route('/email/<body>')
-def emailSender(body):
-    msg = Message("Hazard Report", sender="noreply@demo.com", recipients=[session['email']])
-    msg.body = body
-    mail.send(msg)
+    print("Hello")
     return redirect('/')
 
 if __name__ == '__main__':

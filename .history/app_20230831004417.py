@@ -152,6 +152,7 @@ def smsSender(body):
     to = targetNumber
     )
     print(message)
+    print("Hello")
     return redirect('/')
 
 ### API to send E-Mails
@@ -160,7 +161,7 @@ def emailSender(body):
     msg = Message("Hazard Report", sender="noreply@demo.com", recipients=[session['email']])
     msg.body = body
     mail.send(msg)
-    return redirect('/')
+    return "Email Sent"
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)
