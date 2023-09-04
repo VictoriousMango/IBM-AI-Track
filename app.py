@@ -40,7 +40,7 @@ def load_model(saved_model_name):
     return model, processor
 
 # Model name/path
-saved_model_name = 'facebook/detr-resnet-50'    # Replace with trained model name/path 
+saved_model_name = 'safety'    # Replace with trained model name/path 
 
 # Load model only once
 model, processor = load_model(saved_model_name)
